@@ -22,11 +22,14 @@ root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
 
 # === Configuração de logging ===
+logs_dir = Path(__file__).resolve().parent.parent / "logs"
+logs_dir.mkdir(parents=True, exist_ok=True)  # Garante que a pasta exista
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(str(Path(__file__).resolve().parent.parent / "logs" / "app.log")),
+        logging.FileHandler(str(logs_dir / "app.log")),
         logging.StreamHandler()
     ]
 )
