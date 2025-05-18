@@ -113,8 +113,6 @@ if missing_files:
 try:
     inicio = time.time()
     logger.info("Carregando arquivos .parquet")
-    df_leads = pd.read_parquet(leads_path)
-    df_alunos = pd.read_parquet(alunos_path)
     df_leads['data'] = pd.to_datetime(df_leads['data'], errors='coerce')
     df_leads_antigos = df_leads[df_leads["lancamentos"] != "L34"]
     df_leads_novos = df_leads[df_leads["lancamentos"] == "L34"]
