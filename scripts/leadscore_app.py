@@ -61,8 +61,34 @@ load_dotenv()
 base_path = Path(__file__).resolve().parent.parent  # scripts/ → raiz do projeto
 
 # === Caminhos via .env ===
-leads_path = base_path / os.getenv("CAMINHO_LEADS_PARQUET", "dados/leads_leadscore.parquet")
-alunos_path = base_path / os.getenv("CAMINHO_ALUNOS_PARQUET", "dados/alunos_leadscore.parquet")
+API_URL_BASE = os.getenv("API_PARQUET_URL")
+API_TOKEN = os.getenv("API_TOKEN")
+
+def baixar_parquet(nome_arquivo: str, destino: Path) -> Path:
+    try:
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        logger.info(f"🔽 Baixando {nome_arquivo} da API")
+
+        response = requests.get(
+            f"{API_URL_BASE}/dados/{nome_arquivo}",
+            headers={"Authorization": f"Bearer {API_TOKEN}"},
+        )
+        response.raise_for_status()
+
+        with open(destino, "wb") as f:
+            f.write(response.content)
+
+        logger.info(f"✅ {nome_arquivo} salvo com sucesso em {destino}")
+        return destino
+    except Exception as e:
+        logger.error(f"❌ Erro ao baixar {nome_arquivo}: {e}")
+        st.error(f"Erro ao baixar {nome_arquivo} da API.")
+        st.stop()
+
+# === Caminhos de destino temporário
+parquet_dir = base_path / "temp_parquet"
+leads_path = baixar_parquet("leads_leadscore.parquet", parquet_dir / "leads.parquet")
+alunos_path = baixar_parquet("alunos_leadscore.parquet", parquet_dir / "alunos.parquet")
 
 # === Arquivos obrigatórios (modelos e atualizacao.txt) ===
 required_files = [
@@ -94,6 +120,7 @@ except Exception as e:
     logger.exception("Erro ao carregar arquivos de dados")
     st.error(f"Erro ao carregar os dados: {e}")
     st.stop()
+
 
 # === Carregar Configurações salvas ===
 try:
