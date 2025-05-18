@@ -14,3 +14,7 @@ numpy
 requests
 joblib
 gspread
+fastapi
+uvicorn
+python-dotenv
+

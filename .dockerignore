@@ -1,0 +1,14 @@
+# Ignora tudo desnecessário
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+*.csv
+*.xlsx
+
+# NÃO ignore a pasta dados nem secrets
+!dados/
+!secrets/

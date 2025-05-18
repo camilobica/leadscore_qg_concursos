@@ -14,6 +14,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from google.oauth2 import service_account
 from gspread_dataframe import get_as_dataframe
+from io import BytesIO
 from pathlib import Path
 
 
@@ -60,35 +61,23 @@ load_dotenv()
 # === Ajuste base_path para apontar à raiz do projeto ===
 base_path = Path(__file__).resolve().parent.parent  # scripts/ → raiz do projeto
 
-# === Caminhos via .env ===
-API_URL_BASE = os.getenv("API_PARQUET_URL")
-API_TOKEN = os.getenv("API_TOKEN")
+# === URL base da API e token ===
+API_PARQUET_URL = os.getenv("API_PARQUET_URL")  # ex: https://escola-policia.fly.dev
+API_TOKEN = os.getenv("API_TOKEN")  # mesmo token usado no curl
 
-def baixar_parquet(nome_arquivo: str, destino: Path) -> Path:
-    try:
-        destino.parent.mkdir(parents=True, exist_ok=True)
-        logger.info(f"🔽 Baixando {nome_arquivo} da API")
+def baixar_parquet(nome_arquivo):
+    url = f"{API_PARQUET_URL}/dados/{nome_arquivo}"
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    response = requests.get(url, headers=headers)
 
-        response = requests.get(
-            f"{API_URL_BASE}/dados/{nome_arquivo}",
-            headers={"Authorization": f"Bearer {API_TOKEN}"},
-        )
-        response.raise_for_status()
+    if response.status_code != 200:
+        raise Exception(f"Erro ao baixar {nome_arquivo}: {response.status_code} - {response.text}")
 
-        with open(destino, "wb") as f:
-            f.write(response.content)
+    return pd.read_parquet(BytesIO(response.content))
 
-        logger.info(f"✅ {nome_arquivo} salvo com sucesso em {destino}")
-        return destino
-    except Exception as e:
-        logger.error(f"❌ Erro ao baixar {nome_arquivo}: {e}")
-        st.error(f"Erro ao baixar {nome_arquivo} da API.")
-        st.stop()
-
-# === Caminhos de destino temporário
-parquet_dir = base_path / "temp_parquet"
-leads_path = baixar_parquet("leads_leadscore.parquet", parquet_dir / "leads.parquet")
-alunos_path = baixar_parquet("alunos_leadscore.parquet", parquet_dir / "alunos.parquet")
+# === Carregar os dados ===
+df_leads = baixar_parquet("leads_leadscore.parquet")
+df_alunos = baixar_parquet("alunos_leadscore.parquet")
 
 # === Arquivos obrigatórios (modelos e atualizacao.txt) ===
 required_files = [

@@ -4,14 +4,15 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
+# Caminho seguro para .env
 dotenv_path = Path(__file__).resolve().parent.parent / "secrets" / ".env"
 load_dotenv(dotenv_path)
 
-
 app = FastAPI()
+
+# Caminho dos dados
 base_path = Path(__file__).resolve().parent.parent / "dados"
 API_TOKEN = os.getenv("API_TOKEN")
-
 
 def verificar_token(authorization: str):
     if not authorization or not authorization.startswith("Bearer "):
@@ -19,7 +20,6 @@ def verificar_token(authorization: str):
     token = authorization.split(" ")[1]
     if token != API_TOKEN:
         raise HTTPException(status_code=403, detail="Token incorreto.")
-
 
 @app.get("/dados/{filename}")
 def servir_parquet(filename: str, authorization: str = Header(None)):
