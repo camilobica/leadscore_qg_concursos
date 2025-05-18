@@ -109,19 +109,9 @@ if missing_files:
     logger.error(f"Arquivos locais ausentes: {missing_files}")
     st.stop()
 
-# === Carregar Dados ===
-try:
-    inicio = time.time()
-    logger.info("Carregando arquivos .parquet")
-    df_leads['data'] = pd.to_datetime(df_leads['data'], errors='coerce')
+# === Definição de Leads ===
     df_leads_antigos = df_leads[df_leads["lancamentos"] != "L34"]
     df_leads_novos = df_leads[df_leads["lancamentos"] == "L34"]
-    fim = time.time()
-    logger.info(f"Dados carregados com sucesso em {fim - inicio:.2f}s")
-except Exception as e:
-    logger.exception("Erro ao carregar arquivos de dados")
-    st.error(f"Erro ao carregar os dados: {e}")
-    st.stop()
 
 
 # === Carregar Configurações salvas ===
