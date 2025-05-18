@@ -1,0 +1,16 @@
+streamlit
+pandas
+matplotlib
+seaborn
+scikit-learn
+openpyxl
+fastapi
+uvicorn
+gspread
+gspread_dataframe
+python-dotenv
+google-auth
+numpy
+requests
+joblib
+gspread
