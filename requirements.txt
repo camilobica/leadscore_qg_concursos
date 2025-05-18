@@ -17,4 +17,5 @@ gspread
 fastapi
 uvicorn
 python-dotenv
+python-multipart
 
