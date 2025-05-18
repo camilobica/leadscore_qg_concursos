@@ -21,18 +21,13 @@ from pathlib import Path
 root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
 
-# === Configuração de logging ===
-logs_dir = Path(__file__).resolve().parent.parent / "logs"
-logs_dir.mkdir(parents=True, exist_ok=True)  # Garante que a pasta exista
-
+# === Configuração de logging segura para nuvem (Streamlit Cloud) ===
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler(str(logs_dir / "app.log")),
-        logging.StreamHandler()
-    ]
+    stream=sys.stdout  # Apenas saída no console (sem arquivos)
 )
+
 logger = logging.getLogger(__name__)
 logger.info("App iniciado")
 
