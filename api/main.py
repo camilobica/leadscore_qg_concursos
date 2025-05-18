@@ -30,3 +30,18 @@ def servir_parquet(filename: str, authorization: str = Header(None)):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado.")
 
     return FileResponse(file_path, media_type="application/octet-stream")
+
+
+from fastapi import UploadFile
+
+@app.put("/dados/{filename}")
+async def upload_parquet(filename: str, file: UploadFile, authorization: str = Header(None)):
+    verificar_token(authorization)
+
+    # Caminho onde o arquivo será salvo
+    file_path = base_path / filename
+    with open(file_path, "wb") as f:
+        content = await file.read()
+        f.write(content)
+
+    return {"detail": f"{filename} salvo com sucesso"}
