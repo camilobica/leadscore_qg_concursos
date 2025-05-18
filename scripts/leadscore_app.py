@@ -25,7 +25,7 @@ sys.path.append(str(root_dir))
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    stream=sys.stdout  # Apenas saída no console (sem arquivos)
+    stream=sys.stdout  # 🔒 Apenas console
 )
 
 logger = logging.getLogger(__name__)
@@ -60,14 +60,18 @@ load_dotenv()
 # === Ajuste base_path para apontar à raiz do projeto ===
 base_path = Path(__file__).resolve().parent.parent  # scripts/ → raiz do projeto
 
-# === Verifica se arquivos obrigatórios existem ===
+# === Caminhos via .env ===
+leads_path = base_path / os.getenv("CAMINHO_LEADS_PARQUET", "dados/leads_leadscore.parquet")
+alunos_path = base_path / os.getenv("CAMINHO_ALUNOS_PARQUET", "dados/alunos_leadscore.parquet")
+
+# === Arquivos obrigatórios (modelos e atualizacao.txt) ===
 required_files = [
-    base_path / "dados" / "leads_leadscore.parquet",
-    base_path / "dados" / "alunos_leadscore.parquet",
+    leads_path,
+    alunos_path,
     base_path / "modelos" / "limites_faixa.pkl",
     base_path / "modelos" / "score_map.pkl",
     base_path / "modelos" / "tabelas_lift.pkl",
-    base_path / "config" / "ultima_atualizacao.txt"
+    atualizacao_path
 ]
 
 missing_files = [str(f) for f in required_files if not f.exists()]
@@ -80,8 +84,8 @@ if missing_files:
 try:
     inicio = time.time()
     logger.info("Carregando arquivos .parquet")
-    df_leads = pd.read_parquet(base_path / "dados" / "leads_leadscore.parquet")
-    df_alunos = pd.read_parquet(base_path / "dados" / "alunos_leadscore.parquet")
+    df_leads = pd.read_parquet(leads_path)
+    df_alunos = pd.read_parquet(alunos_path)
     df_leads['data'] = pd.to_datetime(df_leads['data'], errors='coerce')
     df_leads_antigos = df_leads[df_leads["lancamentos"] != "L34"]
     df_leads_novos = df_leads[df_leads["lancamentos"] == "L34"]
