@@ -70,8 +70,7 @@ required_files = [
     alunos_path,
     base_path / "modelos" / "limites_faixa.pkl",
     base_path / "modelos" / "score_map.pkl",
-    base_path / "modelos" / "tabelas_lift.pkl",
-    atualizacao_path
+    base_path / "modelos" / "tabelas_lift.pkl"
 ]
 
 missing_files = [str(f) for f in required_files if not f.exists()]
