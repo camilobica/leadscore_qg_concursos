@@ -76,23 +76,37 @@ def baixar_parquet(nome_arquivo):
 
     return pd.read_parquet(BytesIO(response.content))
 
-# === Carregar os dados ===
-df_leads = baixar_parquet("leads_leadscore.parquet")
-df_alunos = baixar_parquet("alunos_leadscore.parquet")
+# === Carregar os dados .parquet da API ===
+try:
+    inicio = time.time()
+    logger.info("Baixando dados parquet da API")
 
-# === Arquivos obrigatórios (modelos e atualizacao.txt) ===
+    df_leads = baixar_parquet("leads_leadscore.parquet")
+    df_alunos = baixar_parquet("alunos_leadscore.parquet")
+    df_leads['data'] = pd.to_datetime(df_leads['data'], errors='coerce')
+    df_leads_antigos = df_leads[df_leads["lancamentos"] != "L34"]
+    df_leads_novos = df_leads[df_leads["lancamentos"] == "L34"]
+
+    fim = time.time()
+    logger.info(f"Dados carregados com sucesso em {fim - inicio:.2f}s")
+
+except Exception as e:
+    logger.exception("Erro ao carregar dados parquet via API")
+    st.error(f"❌ Erro ao carregar dados via API: {e}")
+    st.stop()
+
+# === Verifica os arquivos locais obrigatórios (modelos e atualizacao.txt) ===
 required_files = [
-    leads_path,
-    alunos_path,
     base_path / "modelos" / "limites_faixa.pkl",
     base_path / "modelos" / "score_map.pkl",
-    base_path / "modelos" / "tabelas_lift.pkl"
+    base_path / "modelos" / "tabelas_lift.pkl",
+    base_path / "config" / "ultima_atualizacao.txt"
 ]
 
 missing_files = [str(f) for f in required_files if not f.exists()]
 if missing_files:
-    st.error(f"❌ Arquivos ausentes:\n\n{chr(10).join(missing_files)}")
-    logger.error(f"Arquivos ausentes: {missing_files}")
+    st.error(f"❌ Arquivos locais ausentes:\n\n{chr(10).join(missing_files)}")
+    logger.error(f"Arquivos locais ausentes: {missing_files}")
     st.stop()
 
 # === Carregar Dados ===
