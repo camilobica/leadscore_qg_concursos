@@ -63,7 +63,7 @@ load_dotenv()
 base_path = Path(__file__).resolve().parent.parent  # scripts/ → raiz do projeto
 
 # === URL base da API e token ===
-API_PARQUET_URL = os.getenv("API_PARQUET_URL")  # ex: https://escola-policia.fly.dev
+API_PARQUET_URL = os.getenv("API_PARQUET_URL") 
 API_TOKEN = os.getenv("API_TOKEN")  # mesmo token usado no curl
 
 def baixar_parquet(nome_arquivo):
