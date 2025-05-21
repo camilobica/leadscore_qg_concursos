@@ -20,3 +20,7 @@ primary_region = 'gru'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
+
+[mounts]
+  source = "dados_volume"
+  destination = "/app/dados"
