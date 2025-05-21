@@ -12,6 +12,7 @@ app = FastAPI()
 
 # === Diretório onde os .parquet estão armazenados ===
 base_path = Path(__file__).resolve().parent.parent / "dados"
+base_path.mkdir(parents=True, exist_ok=True)  # <- isso garante que a pasta exista
 API_TOKEN = os.getenv("API_TOKEN")
 
 # === Autenticação via Header Authorization ===
