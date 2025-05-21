@@ -76,10 +76,16 @@ if not API_PARQUET_URL or not API_TOKEN:
     except:
         raise RuntimeError(erro)
 
-# === Função para baixar parquet da API ===
-def baixar_parquet(nome_arquivo):
+# === Função para carregar parquet de arquivo local ou API ===
+def carregar_parquet_com_fallback(nome_arquivo):
+    local_path = base_path / "dados" / nome_arquivo
+    if local_path.exists():
+        logger.info(f"📁 Lendo {nome_arquivo} localmente")
+        return pd.read_parquet(local_path)
+
+    logger.info(f"🌐 Baixando {nome_arquivo} da API")
     url = f"{API_PARQUET_URL}/dados/{nome_arquivo}"
-    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    headers = {"Authorization": f"Bearer " + API_TOKEN}
     response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
@@ -87,13 +93,13 @@ def baixar_parquet(nome_arquivo):
 
     return pd.read_parquet(BytesIO(response.content))
 
-# === Carregar os dados .parquet da API ===
+# === Carregar os dados .parquet (local ou API) ===
 try:
     inicio = time.time()
-    logger.info("Baixando dados parquet da API")
+    logger.info("📦 Iniciando carregamento dos dados parquet...")
 
-    df_leads = baixar_parquet("leads_leadscore.parquet")
-    df_alunos = baixar_parquet("alunos_leadscore.parquet")
+    df_leads = carregar_parquet_com_fallback("leads_leadscore.parquet")
+    df_alunos = carregar_parquet_com_fallback("alunos_leadscore.parquet")
     df_leads['data'] = pd.to_datetime(df_leads['data'], errors='coerce')
 
     df_leads_antigos = df_leads[df_leads["lancamentos"] != "L34"]
@@ -103,8 +109,8 @@ try:
     logger.info(f"✅ Dados carregados com sucesso em {fim - inicio:.2f}s")
 
 except Exception as e:
-    logger.exception("Erro ao carregar dados parquet via API")
-    st.error(f"❌ Erro ao carregar dados via API: {e}")
+    logger.exception("Erro ao carregar dados parquet local ou via API")
+    st.error(f"❌ Erro ao carregar dados: {e}")
     st.stop()
 
 # === Verifica os arquivos locais obrigatórios (modelos e atualizacao.txt) ===
