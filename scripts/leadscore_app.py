@@ -12,24 +12,22 @@ import time
 
 from cycler import cycler
 from datetime import datetime
-from dotenv import load_dotenv
 from google.oauth2 import service_account
 from gspread_dataframe import get_as_dataframe
 from io import BytesIO
 from pathlib import Path
 
-
 # Garante que a pasta raiz (escola_policia) esteja no sys.path
 root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
+base_path = root_dir
 
 # === Configuração de logging segura para nuvem (Streamlit Cloud) ===
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    stream=sys.stdout  # 🔒 Apenas console
+    stream=sys.stdout
 )
-
 logger = logging.getLogger(__name__)
 logger.info("App iniciado")
 
@@ -57,16 +55,28 @@ from notebooks.src.leadscore_tabelas import (
 st.set_page_config(page_title="Leadscore QG Concursos", layout="wide")
 
 # === Carregar variáveis de ambiente ===
-dotenv_path = Path(__file__).resolve().parent.parent / "secrets" / ".env"
-load_dotenv(dotenv_path)
+RODANDO_NO_FLY = os.getenv("FLY_APP_NAME") is not None
+if not RODANDO_NO_FLY:
+    try:
+        from dotenv import load_dotenv
+        dotenv_path = Path(__file__).resolve().parent.parent / "secrets" / ".env"
+        load_dotenv(dotenv_path)
+        print("✅ Variáveis carregadas do .env local")
+    except Exception as e:
+        print(f"⚠️ Erro ao carregar .env local: {e}")
 
-# === Ajuste base_path para apontar à raiz do projeto ===
-base_path = Path(__file__).resolve().parent.parent  # scripts/ → raiz do projeto
+API_PARQUET_URL = os.getenv("API_PARQUET_URL")
+API_TOKEN = os.getenv("API_TOKEN")
 
-# === URL base da API e token ===
-API_PARQUET_URL = os.getenv("API_PARQUET_URL") 
-API_TOKEN = os.getenv("API_TOKEN")  # mesmo token usado no curl
+if not API_PARQUET_URL or not API_TOKEN:
+    erro = "❌ As variáveis API_PARQUET_URL e/ou API_TOKEN não estão definidas."
+    try:
+        st.error(erro)
+        st.stop()
+    except:
+        raise RuntimeError(erro)
 
+# === Função para baixar parquet da API ===
 def baixar_parquet(nome_arquivo):
     url = f"{API_PARQUET_URL}/dados/{nome_arquivo}"
     headers = {"Authorization": f"Bearer {API_TOKEN}"}
@@ -85,11 +95,12 @@ try:
     df_leads = baixar_parquet("leads_leadscore.parquet")
     df_alunos = baixar_parquet("alunos_leadscore.parquet")
     df_leads['data'] = pd.to_datetime(df_leads['data'], errors='coerce')
+
     df_leads_antigos = df_leads[df_leads["lancamentos"] != "L34"]
     df_leads_novos = df_leads[df_leads["lancamentos"] == "L34"]
 
     fim = time.time()
-    logger.info(f"Dados carregados com sucesso em {fim - inicio:.2f}s")
+    logger.info(f"✅ Dados carregados com sucesso em {fim - inicio:.2f}s")
 
 except Exception as e:
     logger.exception("Erro ao carregar dados parquet via API")
@@ -109,6 +120,7 @@ if missing_files:
     st.error(f"❌ Arquivos locais ausentes:\n\n{chr(10).join(missing_files)}")
     logger.error(f"Arquivos locais ausentes: {missing_files}")
     st.stop()
+
 
 # === Definição de Leads ===
     df_leads_antigos = df_leads[df_leads["lancamentos"] != "L34"]

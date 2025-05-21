@@ -7,11 +7,7 @@ WORKDIR /app
 # Copia todos os arquivos do projeto (inclusive secrets/, dados/, api/)
 COPY ./api /app/api
 COPY ./dados /app/dados
-COPY ./secrets /app/secrets
 COPY requirements.txt /app
-
-# COPIA o .env da pasta correta
-COPY secrets/.env .env
 
 # Instala as dependências a partir do requirements.txt da raiz
 RUN pip install --no-cache-dir -r requirements.txt
