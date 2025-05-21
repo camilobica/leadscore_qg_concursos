@@ -159,7 +159,7 @@ with aba1:
     col_lancamento, col_data, _ = st.columns([1, 1, 3])
     
     with col_lancamento:
-        ordem_personalizada = ["L31", "L32", "L33", "L34"]
+        ordem_personalizada = ["L28", "L29", "L30", "L31", "L32", "L33", "L34"]
         lancamentos_unicos = df_leads["lancamentos"].dropna().unique()
         
         # Filtra apenas os que existem no DataFrame e estão na ordem desejada

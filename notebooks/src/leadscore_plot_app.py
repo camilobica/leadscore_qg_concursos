@@ -184,7 +184,7 @@ def plot_histograma_leadscore(df, limite_a, limite_b, limite_c, limite_d):
 
 
 def plot_comparativo_leads_alunos(df_leads, df_alunos):
-    ordem_personalizada = ["L31", "L32", "L33", "L34"]
+    ordem_personalizada = ["L28", "L29", "L30", "L31", "L32", "L33", "L34"]
     lancamentos_unicos = df_leads["lancamentos"].dropna().unique()
     lancamentos_ordenados = ["Todos"] + [l for l in ordem_personalizada if l in lancamentos_unicos]
 
