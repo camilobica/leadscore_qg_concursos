@@ -57,7 +57,8 @@ from notebooks.src.leadscore_tabelas import (
 st.set_page_config(page_title="Leadscore QG Concursos", layout="wide")
 
 # === Carregar variáveis de ambiente ===
-load_dotenv()
+dotenv_path = Path(__file__).resolve().parent.parent / "secrets" / ".env"
+load_dotenv(dotenv_path)
 
 # === Ajuste base_path para apontar à raiz do projeto ===
 base_path = Path(__file__).resolve().parent.parent  # scripts/ → raiz do projeto
