@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Copia todos os arquivos do projeto (inclusive secrets/, dados/, api/)
 COPY ./api /app/api
-COPY ./dados /app/dados
 COPY requirements.txt /app
 
 # Instala as dependências a partir do requirements.txt da raiz
