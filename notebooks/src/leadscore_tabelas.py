@@ -144,6 +144,7 @@ def destacar_maiores_com_ponderacao(col_vals, cor="green", minimo_absoluto=3):
     return [f'color: {cor};' if s >= limiar and a >= minimo_absoluto else ''
             for s, a in zip(score, abs_vals)]
 
+
 def gerar_tabela_utm_personalizada(df, campo_utm, filtro_faixa="Todos"):
     df_valido = df[df[campo_utm].notna() & (df[campo_utm] != "")].copy()
     df_valido = df_valido[~df_valido[campo_utm].astype(str).str.contains(r"\{\{.*?\}\}")]
@@ -183,6 +184,87 @@ def gerar_tabela_utm_personalizada(df, campo_utm, filtro_faixa="Todos"):
         styled = styled.apply(destacar_maiores_com_ponderacao, subset=["D"], axis=0, cor="red")
 
     return styled
+
+
+def gerar_tabela_facebook_com_cpl(df_base, df_cpl_face):
+    df = df_base.copy()
+    df["utm_source"] = df["utm_source"].astype(str).str.strip().str.lower()
+    df["utm_content"] = df["utm_content"].astype(str).str.strip().str.lower()
+    df["leadscore_faixa"] = df["leadscore_faixa"].astype(str).str.strip().str.upper()
+
+    df = df[
+        (df["utm_source"] == "facebook-ads") &
+        df["utm_content"].notna() &
+        (df["utm_content"] != "")
+    ].copy()
+
+    dist = df.groupby(["utm_content", "leadscore_faixa"]).size().unstack(fill_value=0)
+    for faixa in ["A", "B", "C", "D"]:
+        if faixa not in dist.columns:
+            dist[faixa] = 0
+    dist["total"] = dist[["A", "B", "C", "D"]].sum(axis=1)
+    for faixa in ["A", "B", "C", "D"]:
+        dist[faixa] = (dist[faixa] / dist["total"] * 100).round(1)
+
+    df_cpl = df_cpl_face.copy()
+    df_cpl["criativo"] = df_cpl["criativo"].astype(str).str.strip().str.lower()
+    cpl_info = df_cpl[["criativo", "cpl"]].drop_duplicates().set_index("criativo")
+
+    tabela = dist.merge(cpl_info, left_index=True, right_index=True, how="left").reset_index()
+    tabela.rename(columns={
+        "utm_content": "criativo",
+        "A": "% faixa A",
+        "B": "% faixa B",
+        "C": "% faixa C",
+        "D": "% faixa D",
+        "total": "total leads",
+        "cpl": "CPL"
+    }, inplace=True)
+    # Converter para número (coerção segura)
+    tabela["CPL"] = pd.to_numeric(tabela["CPL"], errors="coerce")
+    
+    # Remover linhas com CPL inválido (NaN)
+    tabela = tabela[~tabela["CPL"].isna()].copy()
+    
+    return tabela
+
+
+
+def gerar_tabela_google_com_cpl(df_base, df_cpl_google):
+    df = df_base[
+        (df_base["utm_source"] == "google-ads") &
+        df_base["utm_campaign"].notna()
+    ].copy()
+
+    df["utm_campaign"] = df["utm_campaign"].str.strip().str.lower()
+    df["leadscore_faixa"] = df["leadscore_faixa"].astype(str).str.strip().str.upper()
+
+    dist = df.groupby(["utm_campaign", "leadscore_faixa"]).size().unstack(fill_value=0)
+    for faixa in ["A", "B", "C", "D"]:
+        if faixa not in dist.columns:
+            dist[faixa] = 0
+    dist["total"] = dist[["A", "B", "C", "D"]].sum(axis=1)
+    for faixa in ["A", "B", "C", "D"]:
+        dist[faixa] = (dist[faixa] / dist["total"] * 100).round(1)
+
+    df_cpl = df_cpl_google.copy()
+    df_cpl["campanha"] = df_cpl["campanha"].astype(str).str.strip().str.lower()
+    cpl_info = df_cpl[["campanha", "cpl"]].drop_duplicates().set_index("campanha")
+
+    tabela = dist.merge(cpl_info, left_index=True, right_index=True, how="left").reset_index()
+    tabela.rename(columns={
+        "utm_campaign": "campanha",
+        "A": "% faixa A",
+        "B": "% faixa B",
+        "C": "% faixa C",
+        "D": "% faixa D",
+        "total": "total leads",
+        "cpl": "CPL"
+    }, inplace=True)
+    tabela = tabela[~tabela["CPL"].isna()].copy()
+    
+    return tabela
+
 
 
 def gerar_tabela_estatisticas_leadscore(df_leads):

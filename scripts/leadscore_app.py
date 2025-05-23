@@ -44,6 +44,8 @@ from notebooks.src.leadscore_tabelas import (
     destacar_total_linha,
     top1_utms_por_leads_A,
     gerar_tabela_utm_personalizada,
+    gerar_tabela_facebook_com_cpl,
+    gerar_tabela_google_com_cpl,
     gerar_tabela_estatisticas_leadscore,
     detalhar_leadscore_por_variavel,
     gerar_comparativo_faixas,
@@ -100,6 +102,9 @@ try:
 
     df_leads = carregar_parquet_com_fallback("leads_leadscore.parquet")
     df_alunos = carregar_parquet_com_fallback("alunos_leadscore.parquet")
+    df_cpl_face = carregar_parquet_com_fallback("invest_trafego_face.parquet")
+    df_cpl_google = carregar_parquet_com_fallback("invest_trafego_google.parquet")
+    
     df_leads['data'] = pd.to_datetime(df_leads['data'], errors='coerce')
 
     df_leads_antigos = df_leads[df_leads["lancamentos"] != "L34"]
@@ -263,7 +268,7 @@ with aba1:
     df_base_filtrado = df_filtrado.copy()
     
     for idx, campo in enumerate(campos_utm):
-        st.subheader(f"🔹 Campo: `{campo}`")
+        st.subheader(f"🔹 Campo: {campo}")
     
         # Pega apenas valores válidos
         opcoes = df_base_filtrado[campo].dropna().astype(str)
@@ -290,9 +295,26 @@ with aba1:
         styled_tabela = gerar_tabela_utm_personalizada(df_base_filtrado, campo)
     
         if styled_tabela is None:
-            st.info(f"Nenhum dado disponível para `{campo}`.")
+            st.info(f"Nenhum dado disponível para {campo}.")
         else:
             st.dataframe(styled_tabela, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("### Análises de Criativos por CPL")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### Facebook Ads")
+        tabela_face = gerar_tabela_facebook_com_cpl(df_filtrado, df_cpl_face)
+        tabela_face = tabela_face.sort_values(by="total leads", ascending=False)
+        st.dataframe(tabela_face, use_container_width=True, hide_index=True)
+    
+    with col2:
+        st.markdown("#### Google Ads")
+        tabela_google = gerar_tabela_google_com_cpl(df_filtrado, df_cpl_google)
+        tabela_google = tabela_google.sort_values(by="total leads", ascending=False)
+        st.dataframe(tabela_google, use_container_width=True, hide_index=True)
+
 
 
 # === Aba 2: Como Calculamos ===
