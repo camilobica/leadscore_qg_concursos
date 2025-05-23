@@ -37,3 +37,5 @@ def upload_parquet(nome_arquivo):
 # Subir os arquivos principais
 upload_parquet("leads_leadscore.parquet")
 upload_parquet("alunos_leadscore.parquet")
+upload_parquet("invest_trafego_face.parquet")
+upload_parquet("invest_trafego_google.parquet")
