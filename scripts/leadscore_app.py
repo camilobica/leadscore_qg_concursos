@@ -262,6 +262,22 @@ with aba1:
     plot_utm_source_por_faixa(df_filtrado)
 
     st.markdown("---")
+    st.markdown("### Análises de Criativos e Campanhas no Google")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### Facebook Ads")
+        tabela_face = gerar_tabela_facebook_com_cpl(df_filtrado, df_cpl_face)
+        tabela_face = tabela_face.sort_values(by="total leads", ascending=False)
+        st.dataframe(tabela_face, use_container_width=True, hide_index=True)
+    
+    with col2:
+        st.markdown("#### Google Ads")
+        tabela_google = gerar_tabela_google_com_cpl(df_filtrado, df_cpl_google)
+        tabela_google = tabela_google.sort_values(by="total leads", ascending=False)
+        st.dataframe(tabela_google, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
     st.markdown("### 🔍 Análises por UTM's")
     filtros_aplicados = {}
     
@@ -298,22 +314,6 @@ with aba1:
             st.info(f"Nenhum dado disponível para {campo}.")
         else:
             st.dataframe(styled_tabela, use_container_width=True)
-
-    st.markdown("---")
-    st.markdown("### Análises de Criativos por CPL")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("#### Facebook Ads")
-        tabela_face = gerar_tabela_facebook_com_cpl(df_filtrado, df_cpl_face)
-        tabela_face = tabela_face.sort_values(by="total leads", ascending=False)
-        st.dataframe(tabela_face, use_container_width=True, hide_index=True)
-    
-    with col2:
-        st.markdown("#### Google Ads")
-        tabela_google = gerar_tabela_google_com_cpl(df_filtrado, df_cpl_google)
-        tabela_google = tabela_google.sort_values(by="total leads", ascending=False)
-        st.dataframe(tabela_google, use_container_width=True, hide_index=True)
 
 
 
